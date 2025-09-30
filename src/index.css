@@ -8,35 +8,64 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Pastel color palette for trip planner */
+    --background: 35 25% 97%;
+    --foreground: 220 15% 25%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 220 15% 25%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 220 15% 25%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Soft blue - primary brand color */
+    --primary: 210 45% 65%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 210 60% 75%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Warm beige - secondary */
+    --secondary: 35 30% 88%;
+    --secondary-foreground: 220 15% 25%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted pastels */
+    --muted: 220 10% 95%;
+    --muted-foreground: 220 10% 50%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Soft mint green - accent */
+    --accent: 160 40% 85%;
+    --accent-foreground: 220 15% 25%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Vibrant red - investigation threads */
+    --destructive: 0 85% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --thread-red: 0 85% 60%;
+    --thread-glow: 0 85% 70%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Soft pink for highlights */
+    --highlight-pink: 340 60% 85%;
 
-    --radius: 0.5rem;
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+    --ring: 210 45% 65%;
+
+    --radius: 0.75rem;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(210 45% 65%), hsl(210 60% 75%));
+    --gradient-sunset: linear-gradient(135deg, hsl(340 60% 85%), hsl(35 30% 88%));
+    --gradient-board: linear-gradient(180deg, hsl(220 30% 12%), hsl(220 35% 18%));
+
+    /* Shadows */
+    --shadow-card: 0 4px 20px -4px hsl(220 15% 25% / 0.08);
+    --shadow-card-hover: 0 8px 30px -6px hsl(220 15% 25% / 0.15);
+    --shadow-glow: 0 0 30px hsl(210 60% 75% / 0.3);
+    --shadow-thread: 0 0 20px hsl(0 85% 60% / 0.5);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-elastic: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -56,33 +85,49 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Dark mode with investigation board aesthetic */
+    --background: 220 30% 12%;
+    --foreground: 210 30% 92%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 220 25% 15%;
+    --card-foreground: 210 30% 92%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 25% 15%;
+    --popover-foreground: 210 30% 92%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 210 50% 70%;
+    --primary-foreground: 220 30% 12%;
+    --primary-glow: 210 65% 80%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 20% 22%;
+    --secondary-foreground: 210 30% 92%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 220 20% 20%;
+    --muted-foreground: 220 10% 60%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 160 35% 40%;
+    --accent-foreground: 210 30% 92%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 85% 65%;
+    --destructive-foreground: 0 0% 100%;
+    --thread-red: 0 90% 65%;
+    --thread-glow: 0 90% 75%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --highlight-pink: 340 55% 65%;
+
+    --border: 220 20% 25%;
+    --input: 220 20% 25%;
+    --ring: 210 50% 70%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(210 50% 70%), hsl(210 65% 80%));
+    --gradient-sunset: linear-gradient(135deg, hsl(340 55% 65%), hsl(35 25% 45%));
+    --gradient-board: linear-gradient(180deg, hsl(220 30% 10%), hsl(220 35% 15%));
+
+    --shadow-card: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
+    --shadow-card-hover: 0 8px 30px -6px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 30px hsl(210 65% 80% / 0.4);
+    --shadow-thread: 0 0 25px hsl(0 90% 65% / 0.6);
+
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
