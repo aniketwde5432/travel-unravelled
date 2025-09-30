@@ -12,6 +12,9 @@ export interface BaseCard {
   title: string;
   cost?: number;
   connections?: string[]; // IDs of connected cards
+  imageUrl?: string; // Image for card
+  startTime?: string; // Custom start time
+  endTime?: string; // Custom end time
 }
 
 export interface FlightCard extends BaseCard {

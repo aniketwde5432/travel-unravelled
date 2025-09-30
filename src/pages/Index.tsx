@@ -1,14 +1,29 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Calendar, DollarSign, Sparkles } from 'lucide-react';
+import { MapPin, Calendar, DollarSign, Sparkles, FolderOpen } from 'lucide-react';
 import { TripBoard } from '@/components/trip/TripBoard';
 import { TripCard, Trip } from '@/types/trip';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { TripManager } from '@/components/trip/TripManager';
+import { PackingChecklist } from '@/components/trip/PackingChecklist';
+import { DayBalanceMeter } from '@/components/trip/DayBalanceMeter';
+import { DocumentHub } from '@/components/trip/DocumentHub';
+import { LocalTips } from '@/components/trip/LocalTips';
+import { TripMoodboard } from '@/components/trip/TripMoodboard';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Index = () => {
-  const [trip, setTrip] = useState<Trip>({
+  const [trips, setTrips] = useState<Trip[]>([{
     id: 'trip-1',
     name: 'Dream Vacation',
     destination: 'Paris & Tokyo',
@@ -16,14 +31,42 @@ const Index = () => {
     endDate: '2026-06-15',
     cards: [],
     budget: 5000,
-  });
+  }]);
+  const [currentTripId, setCurrentTripId] = useState('trip-1');
+  const [isTripManagerOpen, setIsTripManagerOpen] = useState(false);
+
+  const currentTrip = trips.find(t => t.id === currentTripId) || trips[0];
 
   const handleUpdateCards = (cards: TripCard[]) => {
-    setTrip(prev => ({ ...prev, cards }));
+    setTrips(prev => prev.map(t => 
+      t.id === currentTripId ? { ...t, cards } : t
+    ));
   };
 
   const handleUpdateTrip = (field: keyof Trip, value: any) => {
-    setTrip(prev => ({ ...prev, [field]: value }));
+    setTrips(prev => prev.map(t => 
+      t.id === currentTripId ? { ...t, [field]: value } : t
+    ));
+  };
+
+  const handleCreateTrip = (trip: Trip) => {
+    setTrips(prev => [...prev, trip]);
+    setCurrentTripId(trip.id);
+  };
+
+  const handleDeleteTrip = (tripId: string) => {
+    if (trips.length > 1) {
+      setTrips(prev => prev.filter(t => t.id !== tripId));
+      if (currentTripId === tripId) {
+        setCurrentTripId(trips.find(t => t.id !== tripId)?.id || trips[0].id);
+      }
+    }
+  };
+
+  const getTripDuration = () => {
+    const start = new Date(currentTrip.startDate);
+    const end = new Date(currentTrip.endDate);
+    return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
   };
 
   return (
@@ -49,6 +92,14 @@ const Index = () => {
                 </p>
               </div>
             </div>
+            <Button
+              variant="outline"
+              onClick={() => setIsTripManagerOpen(true)}
+              className="gap-2"
+            >
+              <FolderOpen className="h-4 w-4" />
+              Manage Trips ({trips.length})
+            </Button>
           </div>
         </div>
       </motion.header>
@@ -70,7 +121,7 @@ const Index = () => {
                   </Label>
                   <Input
                     id="tripName"
-                    value={trip.name}
+                    value={currentTrip.name}
                     onChange={(e) => handleUpdateTrip('name', e.target.value)}
                     className="font-semibold"
                   />
@@ -81,7 +132,7 @@ const Index = () => {
                     Destination
                   </Label>
                   <Input
-                    value={trip.destination}
+                    value={currentTrip.destination}
                     onChange={(e) => handleUpdateTrip('destination', e.target.value)}
                   />
                 </div>
@@ -93,13 +144,13 @@ const Index = () => {
                   <div className="flex gap-2 text-sm">
                     <Input
                       type="date"
-                      value={trip.startDate}
+                      value={currentTrip.startDate}
                       onChange={(e) => handleUpdateTrip('startDate', e.target.value)}
                     />
                     <span className="self-center">-</span>
                     <Input
                       type="date"
-                      value={trip.endDate}
+                      value={currentTrip.endDate}
                       onChange={(e) => handleUpdateTrip('endDate', e.target.value)}
                     />
                   </div>
@@ -112,7 +163,7 @@ const Index = () => {
                   <Input
                     id="budget"
                     type="number"
-                    value={trip.budget || ''}
+                    value={currentTrip.budget || ''}
                     onChange={(e) => handleUpdateTrip('budget', parseFloat(e.target.value) || undefined)}
                     placeholder="0"
                   />
@@ -125,12 +176,61 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-6">
-        <TripBoard
-          cards={trip.cards}
-          onUpdateCards={handleUpdateCards}
-          budget={trip.budget}
-        />
+        <div className="flex gap-6">
+          <div className="flex-1">
+            <TripBoard
+              cards={currentTrip.cards}
+              onUpdateCards={handleUpdateCards}
+              budget={currentTrip.budget}
+            />
+          </div>
+
+          {/* Right Sidebar - Additional Features */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="fixed right-6 top-24 z-50 shadow-lg"
+              >
+                Tools & Planning
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-[400px] overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Trip Tools</SheetTitle>
+              </SheetHeader>
+              <Tabs defaultValue="planning" className="mt-6">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="planning">Planning</TabsTrigger>
+                  <TabsTrigger value="inspiration">Inspiration</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="planning" className="space-y-4 mt-4">
+                  <DayBalanceMeter cards={currentTrip.cards} />
+                  <PackingChecklist tripDuration={getTripDuration()} />
+                  <LocalTips destination={currentTrip.destination} />
+                  <DocumentHub />
+                </TabsContent>
+                
+                <TabsContent value="inspiration" className="space-y-4 mt-4">
+                  <TripMoodboard />
+                </TabsContent>
+              </Tabs>
+            </SheetContent>
+          </Sheet>
+        </div>
       </main>
+
+      {/* Trip Manager Dialog */}
+      <TripManager
+        trips={trips}
+        currentTripId={currentTripId}
+        onSelectTrip={setCurrentTripId}
+        onCreateTrip={handleCreateTrip}
+        onDeleteTrip={handleDeleteTrip}
+        open={isTripManagerOpen}
+        onOpenChange={setIsTripManagerOpen}
+      />
     </div>
   );
 };

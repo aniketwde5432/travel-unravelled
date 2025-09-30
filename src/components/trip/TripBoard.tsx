@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { BudgetDashboard } from './BudgetDashboard';
 import { CreateCardDialog } from './CreateCardDialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 
 interface TripBoardProps {
   cards: TripCard[];
@@ -69,27 +70,51 @@ export function TripBoard({ cards, onUpdateCards, budget }: TripBoardProps) {
         const target = cards.find(c => c.id === targetId);
         if (!target) return null;
 
-        const startX = card.position.x + 160; // Half of card width
-        const startY = card.position.y + 80;  // Approximate card center
+        const startX = card.position.x + 160; // Half of card width (320px / 2)
+        const startY = card.position.y + 100;  // Approximate card center
         const endX = target.position.x + 160;
-        const endY = target.position.y + 80;
+        const endY = target.position.y + 100;
 
         return (
-          <motion.line
-            key={`${card.id}-${targetId}`}
-            x1={startX}
-            y1={startY}
-            x2={endX}
-            y2={endY}
-            stroke="hsl(var(--thread-red))"
-            strokeWidth="2"
-            strokeDasharray="5,5"
-            initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 1 }}
-            style={{
-              filter: 'drop-shadow(0 0 6px hsl(var(--thread-glow)))',
-            }}
-          />
+          <g key={`${card.id}-${targetId}`}>
+            <motion.line
+              x1={startX}
+              y1={startY}
+              x2={endX}
+              y2={endY}
+              stroke="hsl(var(--thread-red))"
+              strokeWidth="3"
+              strokeDasharray="10,5"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 0.8 }}
+              transition={{ duration: 0.5 }}
+              style={{
+                filter: 'drop-shadow(0 0 8px hsl(var(--thread-glow)))',
+              }}
+            />
+            <motion.circle
+              cx={startX}
+              cy={startY}
+              r="6"
+              fill="hsl(var(--thread-red))"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              style={{
+                filter: 'drop-shadow(0 0 4px hsl(var(--thread-glow)))',
+              }}
+            />
+            <motion.circle
+              cx={endX}
+              cy={endY}
+              r="6"
+              fill="hsl(var(--thread-red))"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              style={{
+                filter: 'drop-shadow(0 0 4px hsl(var(--thread-glow)))',
+              }}
+            />
+          </g>
         );
       })
     );
@@ -123,6 +148,12 @@ export function TripBoard({ cards, onUpdateCards, budget }: TripBoardProps) {
                 </TabsTrigger>
               </TabsList>
             </Tabs>
+
+            {connectingFrom && (
+              <div className="px-3 py-1 rounded-md bg-primary/20 text-sm animate-pulse">
+                Select another card to connect
+              </div>
+            )}
             
             <Button onClick={() => setIsCreateDialogOpen(true)} className="gap-2">
               <Plus className="h-4 w-4" />
@@ -145,12 +176,23 @@ export function TripBoard({ cards, onUpdateCards, budget }: TripBoardProps) {
               ? 'radial-gradient(circle at 1px 1px, hsl(var(--muted-foreground) / 0.1) 1px, transparent 0)'
               : 'none',
             backgroundSize: '40px 40px',
+            minWidth: viewMode === 'board' ? '4000px' : 'auto',
+            minHeight: viewMode === 'board' ? '3000px' : 'auto',
           }}
         >
           {viewMode === 'board' ? (
             <>
               {/* SVG for connections */}
-              <svg className="absolute inset-0 pointer-events-none" style={{ width: '100%', height: '100%' }}>
+              <svg 
+                className="absolute inset-0 pointer-events-none" 
+                style={{ 
+                  width: '4000px', 
+                  height: '3000px',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0
+                }}
+              >
                 {renderConnections()}
               </svg>
 
@@ -255,8 +297,4 @@ export function TripBoard({ cards, onUpdateCards, budget }: TripBoardProps) {
       />
     </div>
   );
-}
-
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(' ');
 }
