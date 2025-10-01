@@ -129,7 +129,7 @@ export function TripCard({ card, onUpdate, onDelete, onConnect, isSelected, onSe
       exit={{ scale: 0.8, opacity: 0 }}
       whileHover={{ scale: 1.02, boxShadow: 'var(--shadow-card-hover)' }}
       className={cn(
-        'relative w-80 rounded-xl border-2 bg-gradient-to-br backdrop-blur-sm transition-all cursor-pointer overflow-hidden',
+        'relative w-56 rounded-xl border-2 bg-gradient-to-br backdrop-blur-sm transition-all cursor-pointer overflow-hidden',
         colorMap[card.type],
         isSelected && 'ring-4 ring-[hsl(var(--thread-red))] ring-opacity-50'
       )}
@@ -138,7 +138,7 @@ export function TripCard({ card, onUpdate, onDelete, onConnect, isSelected, onSe
     >
       {/* Image Header */}
       {card.imageUrl && (
-        <div className="w-full h-32 overflow-hidden -mt-0 mb-3">
+        <div className="w-full h-24 overflow-hidden -mt-0 mb-2">
           <img 
             src={card.imageUrl} 
             alt={card.title}

@@ -176,25 +176,22 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-6">
-        <div className="flex gap-6">
-          <div className="flex-1">
-            <TripBoard
-              cards={currentTrip.cards}
-              onUpdateCards={handleUpdateCards}
-              budget={currentTrip.budget}
-            />
-          </div>
+        <TripBoard
+          cards={currentTrip.cards}
+          onUpdateCards={handleUpdateCards}
+          budget={currentTrip.budget}
+        />
 
-          {/* Right Sidebar - Additional Features */}
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="fixed right-6 top-24 z-50 shadow-lg"
-              >
-                Tools & Planning
-              </Button>
-            </SheetTrigger>
+        {/* Floating Tools Button */}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button 
+              variant="outline" 
+              className="fixed right-6 bottom-6 z-50 shadow-lg"
+            >
+              Tools & Planning
+            </Button>
+          </SheetTrigger>
             <SheetContent className="w-[400px] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Trip Tools</SheetTitle>
@@ -217,8 +214,7 @@ const Index = () => {
                 </TabsContent>
               </Tabs>
             </SheetContent>
-          </Sheet>
-        </div>
+        </Sheet>
       </main>
 
       {/* Trip Manager Dialog */}

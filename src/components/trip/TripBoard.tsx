@@ -21,6 +21,7 @@ export function TripBoard({ cards, onUpdateCards, budget }: TripBoardProps) {
   const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
   const [draggedCard, setDraggedCard] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [zoom, setZoom] = useState(1);
   const boardRef = useRef<HTMLDivElement>(null);
 
   const handleUpdateCard = (updatedCard: TripCardType) => {
@@ -125,7 +126,7 @@ export function TripBoard({ cards, onUpdateCards, budget }: TripBoardProps) {
       {/* Main Board Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-[hsl(var(--primary-glow))] bg-clip-text text-transparent">
               Trip Planning Board
@@ -162,94 +163,125 @@ export function TripBoard({ cards, onUpdateCards, budget }: TripBoardProps) {
           </div>
         </div>
 
-        {/* Board/Timeline View */}
+        {/* Zoom Controls for Board Mode */}
+        {viewMode === 'board' && (
+          <div className="absolute top-4 right-4 z-10 flex gap-2 bg-background/90 backdrop-blur-sm rounded-lg p-2 border shadow-lg">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setZoom(Math.max(0.5, zoom - 0.1))}
+              className="h-8 w-8 p-0"
+            >
+              -
+            </Button>
+            <span className="px-2 text-sm font-medium self-center min-w-[3rem] text-center">
+              {Math.round(zoom * 100)}%
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setZoom(Math.min(2, zoom + 0.1))}
+              className="h-8 w-8 p-0"
+            >
+              +
+            </Button>
+          </div>
+        )}
+
+        {/* Board/Timeline View Container */}
         <div
-          ref={boardRef}
           className={cn(
-            'flex-1 rounded-2xl relative overflow-auto',
+            'flex-1 rounded-2xl relative overflow-auto border-2',
             viewMode === 'board' 
-              ? 'bg-gradient-to-br from-[hsl(220,30%,12%)] to-[hsl(220,35%,18%)]' 
-              : 'bg-background'
+              ? 'bg-gradient-to-br from-[hsl(220,30%,12%)] to-[hsl(220,35%,18%)] border-primary/30' 
+              : 'bg-background border-border'
           )}
-          style={{
-            backgroundImage: viewMode === 'board' 
-              ? 'radial-gradient(circle at 1px 1px, hsl(var(--muted-foreground) / 0.1) 1px, transparent 0)'
-              : 'none',
-            backgroundSize: '40px 40px',
-            minWidth: viewMode === 'board' ? '4000px' : 'auto',
-            minHeight: viewMode === 'board' ? '3000px' : 'auto',
-          }}
         >
+          {/* Zoomable Board Content */}
+          <div
+            ref={boardRef}
+            style={{
+              transform: viewMode === 'board' ? `scale(${zoom})` : 'none',
+              transformOrigin: 'top left',
+              width: viewMode === 'board' ? '2000px' : '100%',
+              height: viewMode === 'board' ? '1500px' : 'auto',
+              backgroundImage: viewMode === 'board' 
+                ? 'radial-gradient(circle at 1px 1px, hsl(var(--muted-foreground) / 0.1) 1px, transparent 0)'
+                : 'none',
+              backgroundSize: '40px 40px',
+              position: 'relative',
+            }}
+          >
           {viewMode === 'board' ? (
             <>
-              {/* SVG for connections */}
-              <svg 
-                className="absolute inset-0 pointer-events-none" 
-                style={{ 
-                  width: '4000px', 
-                  height: '3000px',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0
-                }}
-              >
-                {renderConnections()}
-              </svg>
+            {/* SVG for connections */}
+            <svg 
+              className="absolute inset-0 pointer-events-none" 
+              style={{ 
+                width: '2000px', 
+                height: '1500px',
+                position: 'absolute',
+                top: 0,
+                left: 0
+              }}
+            >
+              {renderConnections()}
+            </svg>
 
-              {/* Cards */}
-              <AnimatePresence>
-                {cards.map(card => (
-                  <motion.div
-                    key={card.id}
-                    drag
-                    dragMomentum={false}
-                    onDragStart={() => handleDragStart(card.id)}
-                    onDragEnd={(_, info) => {
-                      const newX = card.position.x + info.offset.x;
-                      const newY = card.position.y + info.offset.y;
-                      handleDragEnd(card.id, { x: Math.max(0, newX), y: Math.max(0, newY) });
-                    }}
-                    style={{
-                      position: 'absolute',
-                      left: card.position.x,
-                      top: card.position.y,
-                      cursor: draggedCard === card.id ? 'grabbing' : 'grab',
-                    }}
-                    whileDrag={{ scale: 1.05, zIndex: 1000 }}
-                  >
-                    <TripCardComponent
-                      card={card}
-                      onUpdate={handleUpdateCard}
-                      onDelete={handleDeleteCard}
-                      onConnect={handleConnect}
-                      isSelected={selectedCard === card.id || connectingFrom === card.id}
-                      onSelect={setSelectedCard}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-
-              {/* Empty State */}
-              {cards.length === 0 && (
+            {/* Cards */}
+            <AnimatePresence>
+              {cards.map(card => (
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute inset-0 flex items-center justify-center"
+                  key={card.id}
+                  drag
+                  dragMomentum={false}
+                  onDragStart={() => handleDragStart(card.id)}
+                  onDragEnd={(_, info) => {
+                    const newX = card.position.x + info.offset.x / zoom;
+                    const newY = card.position.y + info.offset.y / zoom;
+                    handleDragEnd(card.id, { x: Math.max(0, newX), y: Math.max(0, newY) });
+                  }}
+                  style={{
+                    position: 'absolute',
+                    left: card.position.x,
+                    top: card.position.y,
+                    cursor: draggedCard === card.id ? 'grabbing' : 'grab',
+                  }}
+                  whileDrag={{ scale: 1.05, zIndex: 1000 }}
                 >
-                  <div className="text-center max-w-md">
-                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Plus className="h-10 w-10 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-semibold mb-2 text-white">Start Your Journey</h3>
-                    <p className="text-gray-400 mb-6">
-                      Create your first card to begin planning your trip. Add flights, stays, activities, and more!
-                    </p>
-                    <Button onClick={() => setIsCreateDialogOpen(true)} size="lg">
-                      Create First Card
-                    </Button>
-                  </div>
+                  <TripCardComponent
+                    card={card}
+                    onUpdate={handleUpdateCard}
+                    onDelete={handleDeleteCard}
+                    onConnect={handleConnect}
+                    isSelected={selectedCard === card.id || connectingFrom === card.id}
+                    onSelect={setSelectedCard}
+                  />
                 </motion.div>
-              )}
+              ))}
+            </AnimatePresence>
+
+            {/* Empty State */}
+            {cards.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                <div className="text-center max-w-md">
+                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Plus className="h-10 w-10 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2 text-white">Start Your Journey</h3>
+                  <p className="text-gray-400 mb-6">
+                    Create your first card to begin planning your trip. Add flights, stays, activities, and more!
+                  </p>
+                  <Button onClick={() => setIsCreateDialogOpen(true)} size="lg">
+                    Create First Card
+                  </Button>
+                </div>
+              </motion.div>
+            )}
             </>
           ) : (
             <div className="p-6">
@@ -281,6 +313,7 @@ export function TripBoard({ cards, onUpdateCards, budget }: TripBoardProps) {
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
 
