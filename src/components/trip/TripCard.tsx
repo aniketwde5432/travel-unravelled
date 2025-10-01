@@ -111,15 +111,6 @@ export function TripCard({ card, onUpdate, onDelete, onConnect, isSelected, onSe
     }
   };
 
-  const calculateDuration = (start?: string, end?: string) => {
-    if (!start || !end) return null;
-    const startDate = new Date(`2000-01-01 ${start}`);
-    const endDate = new Date(`2000-01-01 ${end}`);
-    const diffMinutes = Math.abs((endDate.getTime() - startDate.getTime()) / (1000 * 60));
-    const hours = Math.floor(diffMinutes / 60);
-    const minutes = Math.floor(diffMinutes % 60);
-    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-  };
 
   return (
     <motion.div
@@ -187,19 +178,6 @@ export function TripCard({ card, onUpdate, onDelete, onConnect, isSelected, onSe
       {/* Content */}
       <div className="mb-3 px-4">
         {renderCardContent()}
-        
-        {/* Custom Time Display */}
-        {(card.startTime || card.endTime) && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2 pt-2 border-t">
-            <Clock className="h-3 w-3" />
-            {card.startTime && <span>{card.startTime}</span>}
-            {card.startTime && card.endTime && <span>→</span>}
-            {card.endTime && <span>{card.endTime}</span>}
-            {card.startTime && card.endTime && (
-              <span className="ml-1">({calculateDuration(card.startTime, card.endTime)})</span>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Footer */}

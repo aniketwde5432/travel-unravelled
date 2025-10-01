@@ -71,48 +71,58 @@ export function TripBoard({ cards, onUpdateCards, budget }: TripBoardProps) {
         const target = cards.find(c => c.id === targetId);
         if (!target) return null;
 
-        const startX = card.position.x + 160; // Half of card width (320px / 2)
+        const startX = card.position.x + 112; // Half of card width (224px / 2)
         const startY = card.position.y + 100;  // Approximate card center
-        const endX = target.position.x + 160;
+        const endX = target.position.x + 112;
         const endY = target.position.y + 100;
+
+        // Create smooth bezier curve
+        const midX = (startX + endX) / 2;
+        const midY = (startY + endY) / 2;
+        const controlOffset = Math.abs(endX - startX) * 0.3;
+        
+        const pathData = `M ${startX} ${startY} Q ${midX} ${midY - controlOffset}, ${endX} ${endY}`;
 
         return (
           <g key={`${card.id}-${targetId}`}>
-            <motion.line
-              x1={startX}
-              y1={startY}
-              x2={endX}
-              y2={endY}
+            <motion.path
+              d={pathData}
               stroke="hsl(var(--thread-red))"
-              strokeWidth="3"
-              strokeDasharray="10,5"
+              strokeWidth="2.5"
+              fill="none"
+              strokeLinecap="round"
               initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 0.8 }}
-              transition={{ duration: 0.5 }}
+              animate={{ pathLength: 1, opacity: 0.9 }}
+              transition={{ 
+                duration: 0.8,
+                ease: [0.43, 0.13, 0.23, 0.96]
+              }}
               style={{
-                filter: 'drop-shadow(0 0 8px hsl(var(--thread-glow)))',
+                filter: 'drop-shadow(0 0 6px hsl(var(--thread-glow))) drop-shadow(0 0 12px hsl(var(--thread-glow)/0.3))',
               }}
             />
             <motion.circle
               cx={startX}
               cy={startY}
-              r="6"
+              r="5"
               fill="hsl(var(--thread-red))"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
               style={{
-                filter: 'drop-shadow(0 0 4px hsl(var(--thread-glow)))',
+                filter: 'drop-shadow(0 0 6px hsl(var(--thread-glow)))',
               }}
             />
             <motion.circle
               cx={endX}
               cy={endY}
-              r="6"
+              r="5"
               fill="hsl(var(--thread-red))"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
+              transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
               style={{
-                filter: 'drop-shadow(0 0 4px hsl(var(--thread-glow)))',
+                filter: 'drop-shadow(0 0 6px hsl(var(--thread-glow)))',
               }}
             />
           </g>
@@ -122,9 +132,9 @@ export function TripBoard({ cards, onUpdateCards, budget }: TripBoardProps) {
   };
 
   return (
-    <div className="flex gap-6 h-full">
+    <div className="flex gap-6 h-[calc(100vh-8rem)]">
       {/* Main Board Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-h-0">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -191,99 +201,98 @@ export function TripBoard({ cards, onUpdateCards, budget }: TripBoardProps) {
         {/* Board/Timeline View Container */}
         <div
           className={cn(
-            'flex-1 rounded-2xl relative overflow-auto border-2',
+            'flex-1 rounded-2xl relative overflow-hidden border-2',
             viewMode === 'board' 
               ? 'bg-gradient-to-br from-[hsl(220,30%,12%)] to-[hsl(220,35%,18%)] border-primary/30' 
-              : 'bg-background border-border'
+              : 'bg-background border-border overflow-auto'
           )}
         >
-          {/* Zoomable Board Content */}
-          <div
-            ref={boardRef}
-            style={{
-              transform: viewMode === 'board' ? `scale(${zoom})` : 'none',
-              transformOrigin: 'top left',
-              width: viewMode === 'board' ? '2000px' : '100%',
-              height: viewMode === 'board' ? '1500px' : 'auto',
-              backgroundImage: viewMode === 'board' 
-                ? 'radial-gradient(circle at 1px 1px, hsl(var(--muted-foreground) / 0.1) 1px, transparent 0)'
-                : 'none',
-              backgroundSize: '40px 40px',
-              position: 'relative',
-            }}
-          >
-          {viewMode === 'board' ? (
-            <>
-            {/* SVG for connections */}
-            <svg 
-              className="absolute inset-0 pointer-events-none" 
-              style={{ 
-                width: '2000px', 
-                height: '1500px',
-                position: 'absolute',
-                top: 0,
-                left: 0
-              }}
-            >
-              {renderConnections()}
-            </svg>
-
-            {/* Cards */}
-            <AnimatePresence>
-              {cards.map(card => (
-                <motion.div
-                  key={card.id}
-                  drag
-                  dragMomentum={false}
-                  onDragStart={() => handleDragStart(card.id)}
-                  onDragEnd={(_, info) => {
-                    const newX = card.position.x + info.offset.x / zoom;
-                    const newY = card.position.y + info.offset.y / zoom;
-                    handleDragEnd(card.id, { x: Math.max(0, newX), y: Math.max(0, newY) });
-                  }}
-                  style={{
-                    position: 'absolute',
-                    left: card.position.x,
-                    top: card.position.y,
-                    cursor: draggedCard === card.id ? 'grabbing' : 'grab',
-                  }}
-                  whileDrag={{ scale: 1.05, zIndex: 1000 }}
-                >
-                  <TripCardComponent
-                    card={card}
-                    onUpdate={handleUpdateCard}
-                    onDelete={handleDeleteCard}
-                    onConnect={handleConnect}
-                    isSelected={selectedCard === card.id || connectingFrom === card.id}
-                    onSelect={setSelectedCard}
-                  />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            {/* Empty State */}
-            {cards.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="absolute inset-0 flex items-center justify-center"
+          {viewMode === 'board' && (
+            <div className="absolute inset-0 overflow-auto">
+              <div
+                style={{
+                  transform: `scale(${zoom})`,
+                  transformOrigin: 'top left',
+                  width: '2000px',
+                  height: '1500px',
+                  backgroundImage: 'radial-gradient(circle at 1px 1px, hsl(var(--muted-foreground) / 0.1) 1px, transparent 0)',
+                  backgroundSize: '40px 40px',
+                  position: 'relative',
+                }}
               >
-                <div className="text-center max-w-md">
-                  <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Plus className="h-10 w-10 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2 text-white">Start Your Journey</h3>
-                  <p className="text-gray-400 mb-6">
-                    Create your first card to begin planning your trip. Add flights, stays, activities, and more!
-                  </p>
-                  <Button onClick={() => setIsCreateDialogOpen(true)} size="lg">
-                    Create First Card
-                  </Button>
-                </div>
-              </motion.div>
-            )}
-            </>
-          ) : (
+                {/* SVG for connections */}
+                <svg 
+                  className="absolute inset-0 pointer-events-none" 
+                  style={{ 
+                    width: '2000px', 
+                    height: '1500px',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0
+                  }}
+                >
+                  {renderConnections()}
+                </svg>
+
+                {/* Cards */}
+                <AnimatePresence>
+                  {cards.map(card => (
+                    <motion.div
+                      key={card.id}
+                      drag
+                      dragMomentum={false}
+                      dragElastic={0}
+                      onDragStart={() => handleDragStart(card.id)}
+                      onDragEnd={(_, info) => {
+                        const newX = card.position.x + info.offset.x / zoom;
+                        const newY = card.position.y + info.offset.y / zoom;
+                        handleDragEnd(card.id, { x: Math.max(0, newX), y: Math.max(0, newY) });
+                      }}
+                      style={{
+                        position: 'absolute',
+                        left: card.position.x,
+                        top: card.position.y,
+                        cursor: draggedCard === card.id ? 'grabbing' : 'grab',
+                      }}
+                      whileDrag={{ scale: 1.05, zIndex: 1000 }}
+                    >
+                      <TripCardComponent
+                        card={card}
+                        onUpdate={handleUpdateCard}
+                        onDelete={handleDeleteCard}
+                        onConnect={handleConnect}
+                        isSelected={selectedCard === card.id || connectingFrom === card.id}
+                        onSelect={setSelectedCard}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+
+                {/* Empty State */}
+                {cards.length === 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    <div className="text-center max-w-md">
+                      <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Plus className="h-10 w-10 text-primary" />
+                      </div>
+                      <h3 className="text-xl font-semibold mb-2 text-white">Start Your Journey</h3>
+                      <p className="text-gray-400 mb-6">
+                        Create your first card to begin planning your trip. Add flights, stays, activities, and more!
+                      </p>
+                      <Button onClick={() => setIsCreateDialogOpen(true)} size="lg">
+                        Create First Card
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+          )}
+          {viewMode === 'timeline' && (
             <div className="p-6">
               <div className="space-y-4">
                 {cards
@@ -313,7 +322,6 @@ export function TripBoard({ cards, onUpdateCards, budget }: TripBoardProps) {
               </div>
             </div>
           )}
-          </div>
         </div>
       </div>
 

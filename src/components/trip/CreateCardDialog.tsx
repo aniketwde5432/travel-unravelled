@@ -32,8 +32,6 @@ export function CreateCardDialog({ open, onOpenChange, onCreateCard }: CreateCar
       title: formData.title || 'Untitled',
       cost: formData.cost ? parseFloat(formData.cost) : undefined,
       imageUrl: formData.imageUrl,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
     };
 
     let card: TripCard;
@@ -150,27 +148,6 @@ export function CreateCardDialog({ open, onOpenChange, onCreateCard }: CreateCar
                 value={formData.cost || ''}
                 onChange={(e) => updateFormData('cost', e.target.value)}
               />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="startTime">Start Time</Label>
-                <Input
-                  id="startTime"
-                  type="time"
-                  value={formData.startTime || ''}
-                  onChange={(e) => updateFormData('startTime', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="endTime">End Time</Label>
-                <Input
-                  id="endTime"
-                  type="time"
-                  value={formData.endTime || ''}
-                  onChange={(e) => updateFormData('endTime', e.target.value)}
-                />
-              </div>
             </div>
 
             <div>
